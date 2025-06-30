@@ -24,7 +24,7 @@ canvas.addEventListener("mousemove", e => {
 });
 canvas.addEventListener("click", shoot);
 
-const player = { x: 400, y: 300, size: 40, speed: 2.5 };
+const player = { x: 400, y: 300, size: 40, speed: 1.5 };
 const exitDoor = { x: 750, y: 50, size: 50, open: false };
 let monsters = [];
 
@@ -51,7 +51,7 @@ function spawnMonsters(count) {
   if (corruptionLevel === 12) {
     monsters.push({
       x: 600, y: 400, size: 120, alive: true,
-      speed: 1.5, health: 212, isBoss: true
+      speed: 1.0, health: 212, isBoss: true
     });
     return;
   }
@@ -65,7 +65,7 @@ function spawnMonsters(count) {
     if (Math.hypot(x - player.x, y - player.y) > safeDistance) {
       monsters.push({
         x, y, size: 50, alive: true,
-        speed: 0.5 + 0.1 * corruptionLevel, isBoss: false
+        speed: 0.1 + 0.1 * corruptionLevel, isBoss: false
       });
     }
   }
