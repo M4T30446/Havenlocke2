@@ -65,7 +65,7 @@ function spawnMonsters(count) {
     if (Math.hypot(x - player.x, y - player.y) > safeDistance) {
       monsters.push({
         x, y, size: 50, alive: true,
-        speed: 0.1 + 0.1 * corruptionLevel, isBoss: false
+        speed: 0.3 + 0.1 * corruptionLevel, isBoss: false
       });
     }
   }
