@@ -61,11 +61,11 @@ function spawnMonsters(count) {
     attempts++;
     let x = Math.random() * canvas.width;
     let y = Math.random() * canvas.height;
-    const safeDistance = 150;
+    const safeDistance = 300;
     if (Math.hypot(x - player.x, y - player.y) > safeDistance) {
       monsters.push({
         x, y, size: 50, alive: true,
-        speed: 0.7 + 0.1 * corruptionLevel, isBoss: false
+        speed: 0.5 + 0.1 * corruptionLevel, isBoss: false
       });
     }
   }
@@ -241,7 +241,7 @@ function drawMessages() {
   } else {
     if (corruptionLevel === 1) {
       ctx.fillStyle = "#aaa";
-      ctx.fillText("WASD para mover, Mouse para mirar, Clique para atirar", canvas.width / 2, canvas.height - 50);
+      ctx.fillText("", canvas.width / 2, canvas.height - 50);
     }
     const message = corruptionLevel < 12 ? messages[corruptionLevel - 1] : finalMessage;
     ctx.fillStyle = message.color;
