@@ -1,0 +1,160 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Georgia', serif;
+  background: #f9f6f1;
+  color: #333;
+  line-height: 1.6;
+}
+
+.hero {
+  position: relative;
+  background: #c9a66b; /* marrom claro */
+  height: 50vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  text-align: center;
+}
+
+.hero .overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-content h1 {
+  font-size: 48px;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+.hero-content p {
+  font-size: 20px;
+}
+
+.secret {
+  position: relative;
+  cursor: pointer;
+}
+
+.secret::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: transparent;
+  bottom: -2px;
+  left: 0;
+  transition: background 0.3s;
+}
+
+.secret:hover::after {
+  background: #fff;
+}
+
+.navbar {
+  background: #333;
+}
+
+.navbar ul {
+  display: flex;
+  list-style: none;
+  justify-content: center;
+}
+
+.navbar li {
+  margin: 0 20px;
+}
+
+.navbar a {
+  color: #fff;
+  text-decoration: none;
+  display: block;
+  padding: 15px 0;
+  transition: color 0.3s;
+}
+
+.navbar a:hover {
+  color: #c9a66b;
+}
+
+main {
+  padding: 50px 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.school-image {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.school-image img {
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+h2 {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+.courses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.course-card {
+  flex: 1 1 250px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+}
+
+footer {
+  background: #333;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+.secret-link {
+  color: inherit;
+  text-decoration: none;
+  position: relative;
+  cursor: pointer;
+}
+
+.secret-link::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  background: #fff;
+  bottom: -2px;
+  left: 0;
+  transition: width 0.3s;
+}
+
+.secret-link:hover::after {
+  width: 100%;
+}

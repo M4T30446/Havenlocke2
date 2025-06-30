@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Última Fita</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(#000, #111);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: #ddd;
+      font-family: 'Courier New', Courier, monospace;
+      position: relative;
+    }
+
+    h1 {
+      margin-bottom: 40px;
+      letter-spacing: 1px;
+      text-align: center;
+      text-shadow: 0 0 5px #fff;
+    }
+
+    .cassette-wrapper {
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.4s;
+    }
+
+    .cassette-wrapper:hover {
+      transform: scale(1.05);
+    }
+
+    .cassette {
+      position: relative;
+      width: 280px;
+      height: 160px;
+      background: #333;
+      border: 6px solid #666;
+      border-radius: 12px;
+      box-shadow: inset 0 0 10px #000, 0 0 20px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+
+    .cassette.inserted {
+      background: #e63946;
+      border-color: #222;
+      box-shadow: inset 0 0 15px #111, 0 0 40px #e63946aa;
+    }
+
+    .label {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      height: 50px;
+      background: #f1fa8c;
+      border-radius: 4px;
+      box-shadow: inset 0 0 5px #000;
+    }
+
+    .window {
+      position: absolute;
+      top: 80px;
+      left: 40px;
+      right: 40px;
+      height: 50px;
+      background: #111;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 30px;
+    }
+
+    .reel {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, #fff 20%, #000 21%);
+    }
+
+    .cassette.inserted .reel {
+      animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0); }
+      to { transform: rotate(360deg); }
+    }
+
+    .holes {
+      position: absolute;
+      bottom: 15px;
+      left: 40px;
+      right: 40px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .hole {
+      width: 12px;
+      height: 12px;
+      background: #000;
+      border: 2px solid #fff;
+      border-radius: 50%;
+    }
+
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0.8;
+      pointer-events: none;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(100vh); }
+    }
+
+    .btn {
+      margin-top: 50px;
+      padding: 10px 30px;
+      background: transparent;
+      border: 2px solid #ddd;
+      color: #ddd;
+      font-size: 16px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      background: #ddd;
+      color: #111;
+    }
+  </style>
+</head>
+<body>
+  <h1>Clique na fita para reproduzir o final...</h1>
+
+  <div class="cassette-wrapper" id="cassette">
+    <div class="cassette">
+      <div class="label"></div>
+      <div class="window">
+        <div class="reel"></div>
+        <div class="reel"></div>
+      </div>
+      <div class="holes">
+        <div class="hole"></div>
+        <div class="hole"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn" id="playButton" style="display:none;">Tocar Novamente</button>
+
+  <audio id="audio" src="final-audio.mp3"></audio>
+
+  <script>
+    const cassetteWrapper = document.getElementById('cassette');
+    const cassette = cassetteWrapper.querySelector('.cassette');
+    const audio = document.getElementById('audio');
+    const playButton = document.getElementById('playButton');
+
+    cassetteWrapper.addEventListener('click', () => {
+      cassette.classList.add('inserted');
+      audio.play();
+      playButton.style.display = 'block';
+    });
+
+    playButton.addEventListener('click', () => {
+      audio.currentTime = 0;
+      audio.play();
+    });
+
+    // Snow
+    const snowContainer = document.createElement('div');
+    document.body.appendChild(snowContainer);
+
+    function createSnowflake() {
+      const snowflake = document.createElement('div');
+      snowflake.classList.add('snowflake');
+      const size = Math.random() * 5 + 3 + 'px';
+      snowflake.style.width = size;
+      snowflake.style.height = size;
+      snowflake.style.left = Math.random() * window.innerWidth + 'px';
+      snowflake.style.animationDuration = (Math.random() * 5 + 5) + 's';
+      snowContainer.appendChild(snowflake);
+      setTimeout(() => snowflake.remove(), 10000);
+    }
+
+    setInterval(createSnowflake, 200);
+  </script>
+</body>
+</html>

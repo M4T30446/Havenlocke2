@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Torre de Rádio Havenlocke</title>
+  <link rel="stylesheet" href="radio.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Torre de Rádio Havenlocke</h1>
+    <p class="hint">Sintonize na frequência correta...</p>
+
+    <div class="knob-container">
+      <img src="knob.png" alt="Knob de sintonia" id="knob" />
+    </div>
+
+    <div class="frequency-display">Frequência: 0 AM</div>
+
+    <audio id="staticSound" src="static.mp3" loop></audio>
+    <audio id="jumpscareSound" src="shhh.mp3"></audio>
+  </div>
+
+  <script src="radio.js"></script>
+</body>
+</html>

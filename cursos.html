@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cursos - Blackpoint Academy</title>
+  <link rel="stylesheet" href="blackpoint.css" />
+  <style>
+    /* Mesmos estilos adicionais da página clubes para main e cards */
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+    }
+
+    h1, h2 {
+      color: #5b3a21; /* marrom claro */
+      text-align: center;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    p.intro {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: #4a3927;
+    }
+
+    .course-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+      gap: 1.5rem;
+    }
+
+    .course-card {
+      background-color: #f8f3ef;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: default;
+    }
+
+    .course-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+
+    .course-card h3 {
+      margin-top: 0;
+      color: #7b5537;
+      margin-bottom: 0.8rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+
+    .course-card p {
+      font-size: 1rem;
+      color: #5e4a38;
+      line-height: 1.5;
+    }
+
+    .back-link {
+      display: block;
+      margin: 3rem auto 2rem auto;
+      text-align: center;
+      font-weight: 600;
+      color: #7b5537;
+      text-decoration: none;
+      font-size: 1.1rem;
+      transition: color 0.3s ease;
+    }
+
+    .back-link:hover {
+      color: #b07f4f;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header class="hero" style="height: 220px;">
+    <div class="overlay"></div>
+    <div class="hero-content">
+      <h1>Cursos Técnicos</h1>
+      <p>Preparando para o futuro com formação prática e atualizada</p>
+    </div>
+  </header>
+
+  <nav class="navbar">
+    <ul>
+      <li><a href="blackpoint.html">Sobre</a></li>
+      <li><a href="cursos.html">Cursos</a></li>
+      <li><a href="clube.html">Clubes</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>Conheça nossos cursos técnicos</h2>
+    <p class="intro">
+      A Blackpoint Academy oferece uma variedade de cursos técnicos, que combinam teoria e prática para preparar nossos estudantes para o mercado de trabalho dinâmico e exigente.
+    </p>
+
+    <div class="course-list">
+      <div class="course-card">
+        <h3>Técnico em Informática</h3>
+        <p>Formação focada em desenvolvimento de software, manutenção de sistemas, redes e suporte técnico, com projetos práticos.</p>
+      </div>
+
+      <div class="course-card">
+        <h3>Técnico em Administração</h3>
+        <p>Capacitação para gestão, planejamento, finanças e empreendedorismo, preparando líderes para ambientes corporativos e pequenas empresas.</p>
+      </div>
+
+      <div class="course-card">
+        <h3>Técnico em Eletrônica</h3>
+        <p>Formação técnica em circuitos eletrônicos, automação, instrumentação e manutenção de equipamentos eletrônicos.</p>
+      </div>
+
+      <div class="course-card">
+        <h3>Técnico em Mecânica</h3>
+        <p>Curso que prepara para manutenção, operação e desenvolvimento de sistemas mecânicos industriais e automotivos.</p>
+      </div>
+    </div>
+
+    <a href="index.html" class="back-link">← Voltar para a página principal</a>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Blackpoint Academy — Havenlocke</p>
+  </footer>
+</body>
+</html>

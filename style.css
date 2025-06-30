@@ -1,0 +1,54 @@
+body {
+  margin: 0;
+  background: black;
+  height: 100vh;
+  display: flex;         /* Flex para centralizar tudo */
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  background: #000;
+  border: 4px solid #111; /* Borda sutil para destacar o canvas */
+}
+
+/* Tela de jumpscare cobrindo tudo */
+#jumpscare {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  display: none;
+  background: rgb(0, 0, 0) url('jumpscare.png') center center no-repeat;
+  background-size: contain;
+  z-index: 9999;
+}
+
+/* Tela inicial de terror */
+#startScreen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  cursor: pointer;
+  user-select: none;
+}
+
+#startText {
+  color: #4a4a4a;
+  font-family: 'monospace', sans-serif;
+  font-size: 48px;         /* Tamanho maior para dar impacto */
+  text-align: center;
+  text-shadow: 0 0 10px rgb(57, 57, 57)rgb(104, 104, 104)0 20px #900; /* Brilho de terror */
+  animation: flicker 1s infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}

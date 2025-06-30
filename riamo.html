@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>Terror Invaders - Boss e Código Binário</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: #050305;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    color: #eee;
+    font-family: 'Press Start 2P', cursive;
+    overflow: hidden;
+  }
+  canvas {
+    background: radial-gradient(circle at center, #111111 20%, #000000 100%);
+    image-rendering: pixelated;
+    border: 5px solid #222;
+    box-shadow: 0 0 40px 10px #440044 inset;
+  }
+</style>
+</head>
+<audio id="ost" src="ost.mp3" loop></audio>
+<audio id="shoot" src="shoot.wav"></audio>
+<body>
+
+<canvas id="game" width="640" height="480"></canvas>
+
+<script>
+(() => {
+const ost = document.getElementById('ost');
+const shootSound = document.getElementById('shoot');
+
+ost.volume = 0.5;
+shootSound.volume = 0.5;
+
+ost.play().catch(() => {
+  console.log('Toque a tela ou pressione uma tecla para liberar o som!');
+});
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width;
+const H = canvas.height;
+
+const PLAYER_W = 24;
+const PLAYER_H = 24;
+const PLAYER_SPEED = 4;
+
+const BULLET_W = 6;
+const BULLET_H = 12;
+const BULLET_SPEED = 9;
+
+const ENEMY_ROWS = 4;
+const ENEMY_COLS = 10;
+const ENEMY_W = 24;
+const ENEMY_H = 24;
+const ENEMY_H_GAP = 14;
+const ENEMY_V_GAP = 14;
+let enemyXSpeed = 1.8;
+let enemyDirection = 1;
+const ENEMY_DESCEND = 20;
+
+const player = {
+  x: W/2 - PLAYER_W/2,
+  y: H - PLAYER_H - 40,
+  width: PLAYER_W,
+  height: PLAYER_H,
+  speed: PLAYER_SPEED,
+  shootCooldownBase: 300,
+  shootCooldown: 300,
+  canShoot: true,
+  upgradeLevel: 0,
+  lives: 3,
+  invincibleTime: 0,
+};
+
+const enemies = [];
+const bullets = [];
+const powerUps = [];
+const explosions = [];
+const enemyBullets = [];
+let boss = null;
+let gamePhase = 'enemies'; // enemies -> boss -> end
+let gameOver = false;
+let showBinary = false;
+let binaryMessage = '';
+
+function stringToBinary(str) {
+  return str.split('')
+    .map(char => char.charCodeAt(0).toString(2).padStart(8, '0'))
+    .join('');
+}
+
+function createEnemies(){
+  enemies.length = 0;
+  for(let r=0; r<ENEMY_ROWS; r++){
+    for(let c=0; c<ENEMY_COLS; c++){
+      enemies.push({
+        x: 30 + c*(ENEMY_W + ENEMY_H_GAP),
+        y: 30 + r*(ENEMY_H + ENEMY_V_GAP),
+        baseY: 30 + r*(ENEMY_H + ENEMY_V_GAP),
+        width: ENEMY_W,
+        height: ENEMY_H,
+        alive: true,
+        flickerPhase: Math.random()*Math.PI*2,
+        floatPhase: Math.random()*Math.PI*2,
+        hp: 1,
+      });
+    }
+  }
+}
+
+function createBoss(){
+  boss = {
+    x: W/2 - 64,
+    y: 80,
+    width: 128,
+    height: 128,
+    hp: 150,
+    flickerPhase: 0,
+    floatPhase: 0,
+    alive: true,
+    animFrame: 0,
+    shootTimer: 0,
+    shootInterval: 1200,
+  };
+}
+
+function rectsOverlap(a,b){
+  return a.x < b.x + b.width &&
+         a.x + a.width > b.x &&
+         a.y < b.y + b.height &&
+         a.y + a.height > b.y;
+}
+
+function updateEnemies(){
+  let hitEdge = false;
+  for(const e of enemies){
+    if(!e.alive) continue;
+    e.x += enemyXSpeed * enemyDirection;
+    if(e.x + ENEMY_W > W - 10 || e.x < 10) hitEdge = true;
+  }
+  if(hitEdge){
+    enemyDirection *= -1;
+    for(const e of enemies){
+      e.baseY += ENEMY_DESCEND;
+    }
+  }
+}
+
+function updateBoss(delta){
+  if(!boss || !boss.alive) return;
+  boss.animFrame += delta/300;
+  boss.flickerPhase += delta/400;
+  boss.floatPhase += delta/350;
+  boss.y = 80 + 12 * Math.sin(boss.floatPhase);
+
+  boss.shootTimer += delta;
+  if(boss.shootTimer >= boss.shootInterval){
+    bossShoot();
+    boss.shootTimer = 0;
+  }
+
+  for(let i=bullets.length-1; i>=0; i--){
+    const b = bullets[i];
+    if(b.x < boss.x + boss.width &&
+       b.x + BULLET_W > boss.x &&
+       b.y - BULLET_H < boss.y + boss.height &&
+       b.y > boss.y){
+         boss.hp--;
+         bullets.splice(i,1);
+         createExplosion(b.x + BULLET_W/2, b.y);
+         if(boss.hp <= 0){
+           boss.alive = false;
+           gamePhase = 'end';
+           setTimeout(() => {
+             window.location.href = "new.html";
+           }, 1500);
+         }
+       }
+  }
+}
+
+function bossShoot(){
+  if(!boss || !boss.alive) return;
+  const startX = boss.x + boss.width/2;
+  const startY = boss.y + boss.height;
+  const dx = (player.x + player.width/2) - startX;
+  const dy = (player.y + player.height/2) - startY;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  const speed = 6;
+  enemyBullets.push({
+    x: startX,
+    y: startY,
+    width: 12,
+    height: 12,
+    dx: (dx/dist)*speed,
+    dy: (dy/dist)*speed,
+  });
+}
+
+function updateEnemyBullets(){
+  for(let i = enemyBullets.length -1; i>=0; i--){
+    const b = enemyBullets[i];
+    b.x += b.dx;
+    b.y += b.dy;
+    if(b.x < -20 || b.x > W+20 || b.y < -20 || b.y > H+20){
+      enemyBullets.splice(i,1);
+      continue;
+    }
+    if(player.invincibleTime <= 0 && rectsOverlap(b, player)){
+      enemyBullets.splice(i,1);
+      player.lives--;
+      player.invincibleTime = 2000; // 2s invencibilidade
+      createExplosion(player.x + player.width/2, player.y + player.height/2);
+      if(player.lives <= 0){
+        gameOver = true;
+        showBinary = true;
+        binaryMessage = stringToBinary('tenebra est');
+        setTimeout(() => location.reload(), 3000);
+      }
+    }
+  }
+}
+
+function updateBullets(delta){
+  for(let i=bullets.length-1; i>=0; i--){
+    const b = bullets[i];
+    b.y -= BULLET_SPEED;
+    if(b.y < -BULLET_H){
+      bullets.splice(i,1);
+      continue;
+    }
+    if(gamePhase === 'enemies'){
+      for(let j=0; j<enemies.length; j++){
+        const e = enemies[j];
+        if(!e.alive) continue;
+        if(b.x < e.x + e.width &&
+          b.x + BULLET_W > e.x &&
+          b.y - BULLET_H < e.baseY + e.height &&
+          b.y > e.baseY){
+            e.hp--;
+            bullets.splice(i,1);
+            createExplosion(b.x + BULLET_W/2, b.y);
+            if(e.hp <= 0) e.alive = false;
+            if(Math.random() < 0.15){
+              spawnPowerUp(e.x + e.width/2, e.baseY + e.height);
+            }
+            break;
+        }
+      }
+    }
+  }
+}
+
+function createExplosion(x,y){
+  explosions.push({
+    x: x,
+    y: y,
+    life: 300,
+    maxLife: 300,
+  });
+}
+
+function updateExplosions(delta){
+  for(let i=explosions.length-1; i>=0; i--){
+    const ex = explosions[i];
+    ex.life -= delta;
+    if(ex.life <= 0) explosions.splice(i,1);
+  }
+}
+
+function updatePowerUps(delta){
+  for(let i=powerUps.length-1; i>=0; i--){
+    const p = powerUps[i];
+    p.y += p.speed;
+    if(p.y > H){
+      powerUps.splice(i,1);
+      continue;
+    }
+    if(rectsOverlap(p, player)){
+      powerUps.splice(i,1);
+      if(player.upgradeLevel < 4){
+        player.upgradeLevel++;
+        player.shootCooldown = Math.max(100, player.shootCooldown - 50);
+      }
+    }
+  }
+}
+
+function spawnPowerUp(x,y){
+  powerUps.push({
+    x: x - 10,
+    y: y,
+    width: 20,
+    height: 20,
+    speed: 2,
+    phase: Math.random()*Math.PI*2,
+  });
+}
+
+let leftPressed = false;
+let rightPressed = false;
+
+function updatePlayer(delta){
+  if(player.invincibleTime > 0){
+    player.invincibleTime -= delta;
+  }
+  if(leftPressed && player.x > 0) player.x -= player.speed;
+  if(rightPressed && player.x + player.width < W) player.x += player.speed;
+}
+
+window.addEventListener('keydown', e=>{
+  if(e.code === 'ArrowLeft') leftPressed=true;
+  if(e.code === 'ArrowRight') rightPressed=true;
+  if(e.code === 'Space'){
+    playerShoot();
+    e.preventDefault();
+  }
+});
+window.addEventListener('keyup', e=>{
+  if(e.code === 'ArrowLeft') leftPressed=false;
+  if(e.code === 'ArrowRight') rightPressed=false;
+});
+
+function playerShoot(){
+  if(!player.canShoot || gameOver) return;
+  const midX = player.x + player.width/2 - BULLET_W/2;
+  const startY = player.y;
+
+  switch(player.upgradeLevel){
+    case 0: 
+      bullets.push({x: midX, y: startY, width: BULLET_W, height: BULLET_H});
+      break;
+    case 1:
+      bullets.push({x: midX - 8, y: startY, width: BULLET_W, height: BULLET_H});
+      bullets.push({x: midX + 8, y: startY, width: BULLET_W, height: BULLET_H});
+      break;
+    case 2:
+      bullets.push({x: midX, y: startY, width: BULLET_W, height: BULLET_H});
+      bullets.push({x: midX - 14, y: startY + 5, width: BULLET_W, height: BULLET_H, dx: -1.5});
+      bullets.push({x: midX + 14, y: startY + 5, width: BULLET_W, height: BULLET_H, dx: 1.5});
+      break;
+    case 3:
+      bullets.push({x: midX, y: startY, width: BULLET_W, height: BULLET_H, explosive: true});
+      break;
+    case 4:
+      bullets.push({x: midX, y: startY, width: BULLET_W, height: BULLET_H, explosive: true});
+      bullets.push({x: midX - 14, y: startY + 5, width: BULLET_W, height: BULLET_H, dx: -1.5, explosive: true});
+      bullets.push({x: midX + 14, y: startY + 5, width: BULLET_W, height: BULLET_H, dx: 1.5, explosive: true});
+      break;
+  }
+
+  shootSound.currentTime = 0;
+  shootSound.play();
+
+  player.canShoot = false;
+  setTimeout(() => { player.canShoot = true; }, player.shootCooldown);
+}
+
+function updateBulletsPositions(){
+  for(const b of bullets){
+    b.y -= BULLET_SPEED;
+    if(b.dx) b.x += b.dx;
+  }
+}
+function updateEnemyBulletsPositions(){
+  for(const b of enemyBullets){
+    b.x += b.dx;
+    b.y += b.dy;
+  }
+}
+
+function drawPlayer(t){
+  const px = player.x;
+  const pulse = Math.sin(t/400)*2;
+  const py = player.y + pulse;
+
+  if(player.invincibleTime > 0 && Math.floor(t/100)%2 === 0){
+    ctx.fillStyle = 'rgba(255,80,80,0.8)';
+  } else {
+    ctx.fillStyle = '#ddd';
+  }
+
+  for(let i=0; i<6; i++){
+    ctx.fillRect(px+8, py+4+i*3, 8, 2);
+  }
+  ctx.fillRect(px+6, py+22, 12, 4);
+
+  ctx.fillStyle = player.invincibleTime > 0 && Math.floor(t/100)%2 === 0 ? 'rgba(255,50,50,0.9)' : '#bbb';
+  ctx.fillRect(px+9, py, 6, 6);
+
+  ctx.fillStyle = player.invincibleTime > 0 && Math.floor(t/100)%2 === 0 ? 'rgba(255,200,200,0.9)' : '#fff';
+  ctx.fillRect(px+10, py+2, 2, 2);
+  ctx.fillRect(px+13, py+2, 2, 2);
+
+  ctx.fillStyle = '#445577';
+  ctx.fillRect(px+13, py+30, 6, 16);
+
+  ctx.fillStyle = '#8ab6ff';
+  ctx.beginPath();
+  ctx.arc(px+14, py+22, 10, 0, Math.PI*2);
+  ctx.fill();
+
+  const lightCenterX = px + 14 + Math.sin(t/700)*3;
+  const lightCenterY = py + 10 + Math.cos(t/700)*3;
+  const grad = ctx.createRadialGradient(lightCenterX, lightCenterY, 10, lightCenterX, lightCenterY, 120);
+  grad.addColorStop(0, 'rgba(180,200,255,0.85)');
+  grad.addColorStop(1, 'rgba(180,200,255,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(lightCenterX, lightCenterY);
+  ctx.lineTo(lightCenterX - 60, lightCenterY - 100);
+  ctx.lineTo(lightCenterX + 60, lightCenterY - 100);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawEnemy(e, t){
+  if(!e.alive) return;
+  const floatOffset = Math.sin(t/500 + e.floatPhase)*8;
+  const flicker = 0.6 + 0.4 * Math.sin(t/300 + e.flickerPhase);
+  const alpha = flicker.toFixed(2);
+
+  const x = e.x;
+  const y = e.baseY + floatOffset;
+
+  const gradient = ctx.createRadialGradient(x+ENEMY_W/2, y+ENEMY_H/2, ENEMY_W/4, x+ENEMY_W/2, y+ENEMY_H/2, ENEMY_W/1.7);
+  gradient.addColorStop(0, `rgba(40,0,60,${alpha})`);
+  gradient.addColorStop(0.7, `rgba(20,0,30,${(alpha*0.8).toFixed(2)})`);
+  gradient.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+
+  ctx.moveTo(x + ENEMY_W/2, y + ENEMY_H*0.1);
+  ctx.bezierCurveTo(x + ENEMY_W*0.85, y + ENEMY_H*0.15, x + ENEMY_W*0.95, y + ENEMY_H*0.55, x + ENEMY_W*0.65, y + ENEMY_H*0.85);
+  ctx.bezierCurveTo(x + ENEMY_W*0.95, y + ENEMY_H*1.05, x + ENEMY_W*0.7, y + ENEMY_H*1.15, x + ENEMY_W/2, y + ENEMY_H*1);
+  ctx.bezierCurveTo(x + ENEMY_W*0.3, y + ENEMY_H*1.15, x + ENEMY_W*0.05, y + ENEMY_H*1.05, x + ENEMY_W*0.35, y + ENEMY_H*0.85);
+  ctx.bezierCurveTo(x + ENEMY_W*0.05, y + ENEMY_H*0.55, x + ENEMY_W*0.15, y + ENEMY_H*0.15, x + ENEMY_W/2, y + ENEMY_H*0.1);
+  ctx.closePath();
+  ctx.fill();
+
+  const eyeAlpha = 0.9 * flicker;
+  const eyeGlow = ctx.createRadialGradient(x + ENEMY_W/3, y + ENEMY_H/2.5, 5, x + ENEMY_W/3, y + ENEMY_H/2.5, 20);
+  eyeGlow.addColorStop(0, `rgba(255,30,30,${eyeAlpha.toFixed(2)})`);
+  eyeGlow.addColorStop(1, 'rgba(255,30,30,0)');
+  ctx.fillStyle = eyeGlow;
+  ctx.beginPath();
+  ctx.ellipse(x + ENEMY_W/3, y + ENEMY_H/2.5, 6, 8, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle = `rgba(255,30,30,${eyeAlpha.toFixed(2)})`;
+  ctx.beginPath();
+  ctx.ellipse(x + ENEMY_W/3, y + ENEMY_H/2.5, 3, 4, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  const eyeGlow2 = ctx.createRadialGradient(x + ENEMY_W*0.7, y + ENEMY_H/2.5, 5, x + ENEMY_W*0.7, y + ENEMY_H/2.5, 20);
+  eyeGlow2.addColorStop(0, `rgba(255,30,30,${eyeAlpha.toFixed(2)})`);
+  eyeGlow2.addColorStop(1, 'rgba(255,30,30,0)');
+  ctx.fillStyle = eyeGlow2;
+  ctx.beginPath();
+  ctx.ellipse(x + ENEMY_W*0.7, y + ENEMY_H/2.5, 6, 8, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle = `rgba(255,30,30,${eyeAlpha.toFixed(2)})`;
+  ctx.beginPath();
+  ctx.ellipse(x + ENEMY_W*0.7, y + ENEMY_H/2.5, 3, 4, 0, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawBullet(b){
+  ctx.fillStyle = '#4f4';
+  ctx.fillRect(b.x, b.y, b.width, b.height);
+}
+
+function drawEnemyBullet(b){
+  const glow = ctx.createRadialGradient(b.x + b.width/2, b.y + b.height/2, 6, b.x + b.width/2, b.y + b.height/2, 18);
+  glow.addColorStop(0, '#ff3300');
+  glow.addColorStop(1, 'rgba(255, 51, 0, 0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.ellipse(b.x + b.width/2, b.y + b.height/2, 10, 10, 0, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawExplosion(ex){
+  const alpha = ex.life / ex.maxLife;
+  const radius = 12 * (1 - alpha);
+  const grad = ctx.createRadialGradient(ex.x, ex.y, 0, ex.x, ex.y, radius);
+  grad.addColorStop(0, `rgba(255, 255, 255, ${alpha.toFixed(2)})`);
+  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(ex.x, ex.y, radius, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawPowerUp(p, t){
+  const glow = ctx.createRadialGradient(p.x + p.width/2, p.y + p.height/2, 8, p.x + p.width/2, p.y + p.height/2, 22);
+  glow.addColorStop(0, '#0ff');
+  glow.addColorStop(1, 'rgba(0, 255, 255, 0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.ellipse(p.x + p.width/2, p.y + p.height/2, 10, 10, 0, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawBoss(t){
+  if(!boss || !boss.alive) return;
+  const x = boss.x;
+  const y = boss.y;
+
+  const flickerAlpha = 0.8 + 0.2 * Math.sin(t/300);
+  const glow = ctx.createRadialGradient(x + boss.width/2, y + boss.height/2, 30, x + boss.width/2, y + boss.height/2, 120);
+  glow.addColorStop(0, `rgba(255, 20, 20, ${flickerAlpha.toFixed(2)})`);
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.ellipse(x + boss.width/2, y + boss.height/2, 64, 64, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Corpo do boss com alguns triângulos e círculos simples para dar forma
+  ctx.fillStyle = `rgba(180,30,30,${flickerAlpha.toFixed(2)})`;
+  ctx.beginPath();
+  ctx.moveTo(x + boss.width/2, y + 10);
+  ctx.lineTo(x + boss.width - 20, y + boss.height - 10);
+  ctx.lineTo(x + 20, y + boss.height - 10);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#ff5555';
+  ctx.beginPath();
+  ctx.ellipse(x + boss.width/2, y + boss.height/2, 40, 40, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.ellipse(x + boss.width/2, y + boss.height/2 - 10, 12, 12, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle = '#ff0000';
+  ctx.beginPath();
+  ctx.ellipse(x + boss.width/2, y + boss.height/2 - 10, 6, 6, 0, 0, Math.PI*2);
+  ctx.fill();
+}
+
+function drawHUD(t){
+  ctx.fillStyle = '#eee';
+  ctx.font = '16px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText(`Vidas: ${player.lives}`, 10, 30);
+  ctx.fillText(`Fase: ${gamePhase === 'enemies' ? 'Invasores' : gamePhase === 'boss' ? 'Chefe' : 'Fim'}`, 10, 60);
+
+  if(showBinary){
+    ctx.fillStyle = 'rgba(0,0,0,0.85)';
+    ctx.fillRect(0,0,W,H);
+
+    const binString = binaryMessage;
+    const fontSize = 24;
+    ctx.font = `${fontSize}px monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#0f0';
+
+    const charsPerLine = Math.floor(W / fontSize);
+    const totalLines = Math.ceil(binString.length / charsPerLine);
+    const startY = (H/2) - ((totalLines/2) * fontSize);
+
+    for(let i=0; i<binString.length; i++){
+      const char = binString[i];
+      const x = (i % charsPerLine) * fontSize + fontSize/2;
+      const y = startY + Math.floor(i / charsPerLine) * fontSize;
+      ctx.fillText(char, x, y);
+    }
+  }
+}
+
+let lastTime = 0;
+function gameLoop(t=0){
+  if(!lastTime) lastTime = t;
+  const delta = t - lastTime;
+  lastTime = t;
+
+  if(!gameOver){
+    if(gamePhase === 'enemies'){
+      updateEnemies();
+      updateBullets(delta);
+      updatePowerUps(delta);
+      updateEnemyBullets();
+      updateEnemyBulletsPositions();
+    } else if(gamePhase === 'boss'){
+      updateBoss(delta);
+      updateEnemyBullets();
+      updateEnemyBulletsPositions();
+      updateBullets(delta);
+    }
+
+    updatePlayer(delta);
+    updateBulletsPositions();
+    updateExplosions(delta);
+  }
+
+  // Limpa fundo
+  ctx.clearRect(0,0,W,H);
+
+  if(gamePhase === 'enemies'){
+    for(const e of enemies) drawEnemy(e, t);
+  } else if(gamePhase === 'boss'){
+    drawBoss(t);
+  }
+  drawPlayer(t);
+
+  for(const b of bullets) drawBullet(b);
+  for(const b of enemyBullets) drawEnemyBullet(b);
+  for(const ex of explosions) drawExplosion(ex);
+  for(const p of powerUps) drawPowerUp(p, t);
+
+  drawHUD(t);
+
+  requestAnimationFrame(gameLoop);
+}
+
+createEnemies();
+
+function checkEnemiesCleared(){
+  const anyAlive = enemies.some(e => e.alive);
+  if(!anyAlive && gamePhase === 'enemies'){
+    gamePhase = 'boss';
+    createBoss();
+  }
+}
+
+// No updateBullets, quando inimigo morre, chame essa função:
+function updateBullets(delta){
+  for(let i=bullets.length-1; i>=0; i--){
+    const b = bullets[i];
+    b.y -= BULLET_SPEED;
+    if(b.y < -BULLET_H){
+      bullets.splice(i,1);
+      continue;
+    }
+    if(gamePhase === 'enemies'){
+      for(let j=0; j<enemies.length; j++){
+        const e = enemies[j];
+        if(!e.alive) continue;
+        if(b.x < e.x + e.width &&
+          b.x + BULLET_W > e.x &&
+          b.y - BULLET_H < e.baseY + e.height &&
+          b.y > e.baseY){
+            e.hp--;
+            bullets.splice(i,1);
+            createExplosion(b.x + BULLET_W/2, b.y);
+            if(e.hp <= 0) {
+              e.alive = false;
+              checkEnemiesCleared();  // <-- chama aqui
+            }
+            if(Math.random() < 0.15){
+              spawnPowerUp(e.x + e.width/2, e.baseY + e.height);
+            }
+            break;
+        }
+      }
+    }
+  }
+}
+
+
+gameLoop();
+})();
+</script>
+
+</body>
+</html>

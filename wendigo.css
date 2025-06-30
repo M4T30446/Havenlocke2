@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturCook&display=swap');
+
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+canvas#gameCanvas {
+  display: block;
+  background: #000;
+  /* Defina o tamanho fixo ou responsivo */
+  /* width e height já definidos no html, mas aqui reforça */
+  width: 800px;
+  height: 600px;
+}
+#jumpscare {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  display: none;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+}
+
+#jumpscare img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* mantém proporção */
+  user-select: none;
+  pointer-events: none;
+}
+
+#jumpscare p {
+  font-family: 'UnifrakturCook', cursive;
+  font-size: 96px;
+  color: #ff0000;
+  text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+  margin: 0;
+}

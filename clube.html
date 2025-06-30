@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clubes</title>
+  <link rel="stylesheet" href="blackpoint.css" />
+  <style>
+    /* Estilos adicionais para clubes */
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+    }
+
+    h1, h2 {
+      color: #5b3a21; /* marrom claro */
+      text-align: center;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    p.intro {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: #4a3927;
+    }
+
+    .club-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+      gap: 1.5rem;
+    }
+
+    .club-card {
+      background-color: #f8f3ef;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: default;
+    }
+
+    .club-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+
+    .club-card h3 {
+      margin-top: 0;
+      color: #7b5537;
+      margin-bottom: 0.8rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+
+    .club-card p {
+      font-size: 1rem;
+      color: #5e4a38;
+      line-height: 1.5;
+    }
+
+    /* Link de volta */
+    .back-link {
+      display: block;
+      margin: 3rem auto 2rem auto;
+      text-align: center;
+      font-weight: 600;
+      color: #7b5537;
+      text-decoration: none;
+      font-size: 1.1rem;
+      transition: color 0.3s ease;
+    }
+
+    .back-link:hover {
+      color: #b07f4f;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header class="hero" style="height: 220px;">
+    <div class="overlay"></div>
+    <div class="hero-content">
+      <h1>Clubes</h1>
+      <p>Descubra as paixões que unem nossos estudantes</p>
+    </div>
+  </header>
+
+  <nav class="navbar">
+    <ul>
+      <li><a href="blackpoint.html">Sobre</a></li>
+      <li><a href="cursos.html">Cursos</a></li>
+      <li><a href="clube.html" aria-current="page">Clubes</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>Bem-vindo aos Clubes da Blackpoint Academy</h2>
+    <p class="intro">
+      Na Blackpoint Academy, acreditamos que a educação vai além da sala de aula. 
+      Nossos clubes extracurriculares oferecem oportunidades únicas para desenvolver habilidades, fazer amigos e explorar paixões.
+    </p>
+
+    <div class="club-list">
+      <div class="club-card">
+        <h3>Clube de Teatro</h3>
+        <p>Atue, direcione e explore a arte dramática em produções teatrais emocionantes ao longo do ano.</p>
+      </div>
+
+      <div class="club-card">
+        <h3>Clube de Ciências</h3>
+        <p>Experimente projetos científicos, feiras e debates para ampliar seu conhecimento e curiosidade.</p>
+      </div>
+
+      <div class="club-card">
+        <h3>Clube de Música</h3>
+        <p>Participe da banda da escola, coral e workshops para desenvolver seu talento musical.</p>
+      </div>
+
+      <div class="club-card">
+        <h3>Clube de Literatura</h3>
+        <p>Leia, escreva e discuta obras literárias com colegas apaixonados pela palavra escrita.</p>
+      </div>
+
+      <div class="club-card">
+        <h3>Clube de Robótica</h3>
+        <p>Construa, programe e participe de competições desafiadoras no universo da robótica.</p>
+      </div>
+
+      <div class="club-card">
+        <h3>Clube de Fotografia</h3>
+        <p>Explore técnicas fotográficas e registre momentos especiais da vida escolar e da cidade.</p>
+      </div>
+    </div>
+
+    <a href="index.html" class="back-link">← Voltar para a página principal</a>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Blackpoint Academy — Havenlocke</p>
+  </footer>
+</body>
+</html>
